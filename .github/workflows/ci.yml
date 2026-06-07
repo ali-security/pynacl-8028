@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - name: Install nox
-        run: pip install nox
+        run: pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' nox
       - name: Install libsodium (system install only)
         run: |
           wget --timeout=60 https://download.libsodium.org/libsodium/releases/LATEST.tar.gz || \
@@ -86,7 +86,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
       - name: Install nox
-        run: pip install nox
+        run: pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' nox
       - name: Run tests
         run: LIBSODIUM_MAKE_ARGS="-j$(sysctl -n hw.ncpu)" nox -s ${{ matrix.python.NOXSESSION }}
         env:
@@ -121,7 +121,7 @@ jobs:
           Expand-Archive src/libsodium-1.0.20-stable-msvc.zip -DestinationPath c:\
         shell: powershell
       - name: Install nox
-        run: pip install nox
+        run: pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' nox
       - name: Run tests
         run: |
             call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=${{ matrix.WINDOWS.ARCH }}
@@ -155,7 +155,7 @@ jobs:
         with:
           python-version: "3.13"
         timeout-minutes: 3
-      - run: pip install coverage[toml]
+      - run: pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data
         if: ${{ always() }}

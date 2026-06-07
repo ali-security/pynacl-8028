@@ -10,7 +10,7 @@ and run:
 
 .. code-block:: console
 
-    $ pip install pynacl
+    $ pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' pynacl
 
 Faster wheel build
 ------------------
@@ -20,7 +20,7 @@ and enable `parallelization`_:
 
 .. code-block:: console
 
-    $ LIBSODIUM_MAKE_ARGS=-j4 pip install pynacl
+    $ LIBSODIUM_MAKE_ARGS=-j4 pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' pynacl
 
 Linux source build
 ------------------
@@ -30,14 +30,14 @@ with PyNaCl so to install you can run:
 
 .. code-block:: console
 
-    $ pip install pynacl
+    $ pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' pynacl
 
 If you'd prefer to use the version of ``libsodium`` provided by your
 distribution, you can disable the bundled copy during install by running:
 
 .. code-block:: console
 
-    $ SODIUM_INSTALL=system pip install pynacl
+    $ SODIUM_INSTALL=system pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' pynacl
 
 .. warning:: Usage of the legacy ``easy_install`` command provided by setuptools
    is generally discouraged, and is completely unsupported in PyNaCl's case.
@@ -55,4 +55,4 @@ set the binary to use by setting the ``MAKE`` environment variable:
 
 .. code-block:: console
 
-    $ MAKE=gmake pip install pynacl
+    $ MAKE=gmake pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' pynacl
