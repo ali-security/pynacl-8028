@@ -47,9 +47,9 @@ jobs:
         run: pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' nox
       - name: Install libsodium (system install only)
         run: |
-          wget --timeout=60 https://download.libsodium.org/libsodium/releases/LATEST.tar.gz || \
-          wget --timeout=60 https://download.libsodium.org/libsodium/releases/LATEST.tar.gz
-          tar zxvf LATEST.tar.gz
+          wget --timeout=60 https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz || \
+          wget --timeout=60 https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz
+          tar zxvf libsodium-1.0.20.tar.gz
           cd libsodium-*
           ./configure ${SODIUM_INSTALL_MINIMAL:+--enable-minimal}
           make
