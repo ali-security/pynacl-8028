@@ -50,7 +50,7 @@ jobs:
           wget --timeout=60 https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz || \
           wget --timeout=60 https://download.libsodium.org/libsodium/releases/libsodium-1.0.20.tar.gz
           tar zxvf libsodium-1.0.20.tar.gz
-          cd libsodium-*
+          cd libsodium-1.0.20
           ./configure ${SODIUM_INSTALL_MINIMAL:+--enable-minimal}
           make
           make check
