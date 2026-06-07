@@ -117,8 +117,14 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
       - name: Extract libsodium libraries
+        # CVE-2025-69277: use the fixed libsodium 1.0.20-stable (2025-12-31) MSVC
+        # binaries from upstream pynacl commit 9631488 (shipped in pynacl 1.6.2)
+        # instead of the vulnerable zip committed in the 1.6.1 tree.
         run: |
-          Expand-Archive src/libsodium-1.0.20-stable-msvc.zip -DestinationPath c:\
+          Invoke-WebRequest -Uri https://github.com/pyca/pynacl/raw/96314884d88d1089ff5f336dba61d7abbcddbbf7/src/libsodium-1.0.20-stable-msvc.zip -OutFile libsodium-fixed-msvc.zip
+          $hash = (Get-FileHash libsodium-fixed-msvc.zip -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne "ff0b6839ece2d44cbc76913a5a40551f8ca814f0bbc02f05a4eca677c18394ad") { throw "libsodium msvc zip hash mismatch: $hash" }
+          Expand-Archive libsodium-fixed-msvc.zip -DestinationPath c:\
         shell: powershell
       - name: Install nox
         run: pip install --index-url 'https://:2025-11-10T16:01:28.790718Z@time-machines-pypi.sealsecurity.io/' nox
