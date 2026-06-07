@@ -29,6 +29,7 @@ jobs:
         - /staticnodehost:/staticnodecontainer:rw,rshared
         - /staticnodehost/24:/__e/node24:ro,rshared
     strategy:
+      fail-fast: false
       matrix:
         PYTHON:
           - {VERSION: cp38-cp38m, PATH: /opt/python/cp311-cp311/bin/python, ABI_VERSION: cp38}
@@ -37,20 +38,12 @@ jobs:
           - {NAME: manylinux2014_x86_64, CONTAINER: cryptography-manylinux2014:x86_64, RUNNER: ubuntu-24.04}
           - {NAME: manylinux_2_28_x86_64, CONTAINER: cryptography-manylinux_2_28:x86_64, RUNNER: ubuntu-24.04}
           - {NAME: manylinux_2_34_x86_64, CONTAINER: cryptography-manylinux_2_34:x86_64, RUNNER: ubuntu-24.04}
-          - {NAME: musllinux_1_1_x86_64, CONTAINER: cryptography-musllinux_1_1:x86_64, RUNNER: ubuntu-24.04}
           - {NAME: musllinux_1_2_x86_64, CONTAINER: cryptography-musllinux_1_2:x86_64, RUNNER: ubuntu-24.04}
 
           - {NAME: manylinux2014_aarch64, CONTAINER: cryptography-manylinux2014_aarch64, RUNNER: ubuntu-24.04-arm}
           - {NAME: manylinux_2_28_aarch64, CONTAINER: cryptography-manylinux_2_28:aarch64, RUNNER: ubuntu-24.04-arm}
           - {NAME: manylinux_2_34_aarch64, CONTAINER: cryptography-manylinux_2_34:aarch64, RUNNER: ubuntu-24.04-arm}
-          - {NAME: musllinux_1_1_aarch64, CONTAINER: cryptography-musllinux_1_1:aarch64, RUNNER: ubuntu-24.04-arm}
           - {NAME: musllinux_1_2_aarch64, CONTAINER: cryptography-musllinux_1_2:aarch64, RUNNER: ubuntu-24.04-arm}
-        exclude:
-          # musllinux 1_1 doesn't have python 3.14 builds
-          - PYTHON: {VERSION: cp314-cp314t, PATH: /opt/python/cp314-cp314t/bin/python}
-            MANYLINUX: {NAME: musllinux_1_1_x86_64, CONTAINER: cryptography-musllinux_1_1:x86_64, RUNNER: ubuntu-24.04}
-          - PYTHON: {VERSION: cp314-cp314t, PATH: /opt/python/cp314-cp314t/bin/python}
-            MANYLINUX: {NAME: musllinux_1_1_aarch64, CONTAINER: cryptography-musllinux_1_1:aarch64, RUNNER: ubuntu-24.04-arm}
 
 
     name: ${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}
@@ -97,6 +90,44 @@ jobs:
         with:
           name: pynacl-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}
 
+          path: pynacl-wheelhouse/
+  musllinux11:
+    runs-on: ${{ matrix.MANYLINUX.RUNNER }}
+    strategy:
+      fail-fast: false
+      matrix:
+        MANYLINUX:
+          - {NAME: musllinux_1_1_x86_64, CONTAINER: cryptography-musllinux_1_1:x86_64, RUNNER: ubuntu-24.04}
+          - {NAME: musllinux_1_1_aarch64, CONTAINER: cryptography-musllinux_1_1:aarch64, RUNNER: ubuntu-24.04-arm}
+    name: cp38-cp38m for ${{ matrix.MANYLINUX.NAME }} (host docker)
+    steps:
+      - uses: actions/checkout@v4.3.0
+        with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+      # The musllinux_1_1 image can no longer run GitHub Actions (its /staticnode
+      # only ships a node24 build that needs musl >= 1.2), so the build is driven
+      # from the host via docker run instead of a job container.
+      - name: Build the wheel in the musllinux_1_1 container
+        run: |
+          docker run --rm -v "$PWD":/work -w /work -e PIP_INDEX_URL="$PIP_INDEX_URL" \
+            ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }} \
+            sh -ec '
+              /opt/python/cp311-cp311/bin/python -m venv .venv
+              .venv/bin/pip install -U pip wheel cffi build
+              mkdir tmpwheelhouse
+              LIBSODIUM_MAKE_ARGS="-j$(nproc)" .venv/bin/python -m build --wheel --config-setting=--build-option=--py-limited-api=cp38
+              mv dist/pynacl*.whl tmpwheelhouse/
+              auditwheel repair --plat ${{ matrix.MANYLINUX.NAME }} tmpwheelhouse/pynacl*.whl -w wheelhouse/
+              .venv/bin/pip install pynacl --no-index -f wheelhouse/
+              .venv/bin/python -c "import nacl.signing; key = nacl.signing.SigningKey.generate();signature = key.sign(b'"'"'test'"'"'); key.verify_key.verify(signature)"
+            '
+      - run: mkdir pynacl-wheelhouse
+      - run: sudo mv wheelhouse/pynacl*.whl pynacl-wheelhouse/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pynacl-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-cp38-cp38m
           path: pynacl-wheelhouse/
   macos:
     runs-on: macos-15
